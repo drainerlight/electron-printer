@@ -101,9 +101,7 @@ public:
 
     /** Destructor. The allocated memory will be deallocated
     */
-    ~MemValueBase() {
-        free();
-    }
+    virtual ~MemValueBase() {}
 
     Type * get() {return _value; }
     Type * operator ->() { return &_value; }
@@ -120,6 +118,6 @@ protected:
  * @param oData - destination data
  * @return TRUE if value is String or Buffer, FALSE otherwise
  */
-bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &oData);
+bool getStringOrBufferFromV8Value(v8::Local<v8::Value> iV8Value, std::string &oData);
 
 #endif

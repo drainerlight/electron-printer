@@ -18,6 +18,12 @@
         # sources
         '<!@(["python", "tools/getSourceFiles.py", "src", "cc"])'
       ],
+      'include_dirs' : [
+        "<!(node -e \"require('nan')\")"
+      ],
+      'cflags_cc+': [
+        "-Wno-cast-function-type"
+      ],
       'conditions': [
         # common exclusions
         ['OS!="linux"', {'sources/': [['exclude', '_linux\\.cc$']]}],

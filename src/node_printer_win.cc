@@ -29,6 +29,10 @@ namespace{
         MemValue(const DWORD iSizeKbytes) {
             _value = (Type*)malloc(iSizeKbytes);
         }
+		
+        ~MemValue () {
+            free();
+        }
     protected:
         virtual void free() {
             if(_value != NULL)
@@ -47,7 +51,7 @@ namespace{
         }
         ~PrinterHandle()
         {
-            if(!_ok)
+            if(_ok)
             {
                 ClosePrinter(_printer);
             }
@@ -201,15 +205,15 @@ namespace{
         return result;
     }
 
-    void parseJobObject(JOB_INFO_2W *job, v8::Handle<v8::Object> result_printer_job)
+    void parseJobObject(JOB_INFO_2W *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
         //DWORD                JobId;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("id"), V8_VALUE_NEW(Number, job->JobId));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("id"), V8_VALUE_NEW(Number, job->JobId));
 #define ADD_V8_STRING_PROPERTY(name, key) if((job->##key != NULL) && (*job->##key != L'\0'))    \
         {                                   \
-            result_printer_job->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)job->##key)); \
+            Nan::Set(result_printer_job, V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)job->##key)); \
         }
         //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(name, pPrinterName)
@@ -220,25 +224,25 @@ namespace{
         //LPTSTR               pDatatype;
         ADD_V8_STRING_PROPERTY(format, pDatatype);
         //DWORD                Priority;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, job->Priority));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, job->Priority));
         //DWORD                Size;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("size"), V8_VALUE_NEW(Number, job->Size));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("size"), V8_VALUE_NEW(Number, job->Size));
         //DWORD                Status;
-        v8::Local<v8::Array> result_printer_job_status = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
+        v8::Local<v8::Array> result_printer_job_status = V8_VALUE_NEW_DEFAULT(Array);
         int i_status = 0;
         for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
         {
             if(job->Status & itStatus->second)
             {
-                result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
+                Nan::Set(result_printer_job_status, i_status++, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
             }
         }
         //LPTSTR               pStatus;
         if((job->pStatus != NULL) && (*job->pStatus != L'\0'))
         {
-            result_printer_job_status->Set(i_status++, V8_STRING_NEW_2BYTES((uint16_t*)job->pStatus));
+            Nan::Set(result_printer_job_status, i_status++, V8_STRING_NEW_2BYTES((uint16_t*)job->pStatus));
         }
-        result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("status"), result_printer_job_status);
 
         // Specific fields
         //LPTSTR               pMachineName;
@@ -257,18 +261,18 @@ namespace{
         //LPDEVMODE            pDevMode;
         //PSECURITY_DESCRIPTOR pSecurityDescriptor;
         //DWORD                Position;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("position"), V8_VALUE_NEW(Number, job->Position));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("position"), V8_VALUE_NEW(Number, job->Position));
         //DWORD                StartTime;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("startTime"), V8_VALUE_NEW(Number, job->StartTime));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("startTime"), V8_VALUE_NEW(Number, job->StartTime));
         //DWORD                UntilTime;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("untilTime"), V8_VALUE_NEW(Number, job->UntilTime));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("untilTime"), V8_VALUE_NEW(Number, job->UntilTime));
         //DWORD                TotalPages;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("totalPages"), V8_VALUE_NEW(Number, job->TotalPages));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("totalPages"), V8_VALUE_NEW(Number, job->TotalPages));
         //SYSTEMTIME           Submitted;
         //DWORD                Time;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("time"), V8_VALUE_NEW(Number, job->Time));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("time"), V8_VALUE_NEW(Number, job->Time));
         //DWORD                PagesPrinted;
-        result_printer_job->Set(V8_STRING_NEW_UTF8("pagesPrinted"), V8_VALUE_NEW(Number, job->PagesPrinted));
+        Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("pagesPrinted"), V8_VALUE_NEW(Number, job->PagesPrinted));
     }
 
     /**
@@ -302,7 +306,7 @@ namespace{
 
     std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
                                      const DWORD& iTotalJobs,
-                                     v8::Handle<v8::Object> result_printer_jobs,
+                                     v8::Local<v8::Object> result_printer_jobs,
                                      PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
@@ -313,7 +317,10 @@ namespace{
         {
             std::string error_str("Error on allocating memory for jobs: ");
             error_str += getLastErrorCodeAndMessage();
-            return error_str;
+            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT(Object);
+            Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("error"), V8_STRING_NEW_UTF8(error_str.c_str()));
+            Nan::Set(result_printer_jobs, 0, result_printer_job);
+            return std::string("");
         }
         DWORD dummy_bytes = 0;
         bError = EnumJobsW(*iPrinterHandle, 0, iTotalJobs, 2, (LPBYTE)jobs.get(), bytes_needed, &dummy_bytes, &totalJobs);
@@ -321,24 +328,27 @@ namespace{
         {
             std::string error_str("Error on EnumJobsW: ");
             error_str += getLastErrorCodeAndMessage();
-            return error_str;
+            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT(Object);
+            Nan::Set(result_printer_job, V8_STRING_NEW_UTF8("error"), V8_STRING_NEW_UTF8(error_str.c_str()));
+            Nan::Set(result_printer_jobs, 0, result_printer_job);
+            return std::string("");
         }
         JOB_INFO_2W *job = jobs.get();
         for(DWORD i = 0; i < totalJobs; ++i, ++job)
         {
-            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT(Object);
             parseJobObject(job, result_printer_job);
-            result_printer_jobs->Set(i, result_printer_job);
+            Nan::Set(result_printer_jobs, i, result_printer_job);
         }
         return std::string("");
     }
 
-    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Handle<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
+    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Local<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
     #define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
         {                                   \
-            result_printer->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)printer->##key)); \
+            Nan::Set(result_printer, V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)printer->##key)); \
         }
         //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(name, pPrinterName)
@@ -366,48 +376,48 @@ namespace{
         //DWORD                Status;
         // statuses from:
         // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
-        v8::Local<v8::Array> result_printer_status = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
+        v8::Local<v8::Array> result_printer_status = V8_VALUE_NEW_DEFAULT(Array);
         int i_status = 0;
         for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus != getStatusMap().end(); ++itStatus)
         {
             if(printer->Status & itStatus->second)
             {
-                result_printer_status->Set(i_status, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
+                Nan::Set(result_printer_status, i_status, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
                 ++i_status;
             }
         }
-        result_printer->Set(V8_STRING_NEW_UTF8("status"), result_printer_status);
-        result_printer->Set(V8_STRING_NEW_UTF8("statusNumber"), V8_VALUE_NEW(Number, printer->Status));
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("status"), result_printer_status);
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("statusNumber"), V8_VALUE_NEW(Number, printer->Status));
         //DWORD                Attributes;
-        v8::Local<v8::Array> result_printer_attributes = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
+        v8::Local<v8::Array> result_printer_attributes = V8_VALUE_NEW_DEFAULT(Array);
         int i_attribute = 0;
         for(StatusMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute)
         {
             if(printer->Attributes & itAttribute->second)
             {
-                result_printer_attributes->Set(i_attribute, V8_STRING_NEW_UTF8(itAttribute->first.c_str()));
+                Nan::Set(result_printer_attributes, i_attribute, V8_STRING_NEW_UTF8(itAttribute->first.c_str()));
                 ++i_attribute;
             }
         }
-        result_printer->Set(V8_STRING_NEW_UTF8("attributes"), result_printer_attributes);
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("attributes"), result_printer_attributes);
         //DWORD                Priority;
-        result_printer->Set(V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, printer->Priority));
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, printer->Priority));
         //DWORD                DefaultPriority;
-        result_printer->Set(V8_STRING_NEW_UTF8("defaultPriority"), V8_VALUE_NEW(Number, printer->DefaultPriority));
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("defaultPriority"), V8_VALUE_NEW(Number, printer->DefaultPriority));
         //DWORD                cJobs;
-        //result_printer->Set(V8_STRING_NEW_UTF8("jobs"), V8_VALUE_NEW(Number, printer->cJobs));
+        //Nan::Set(result_printer, V8_STRING_NEW_UTF8("jobs"), V8_VALUE_NEW(Number, printer->cJobs));
         //DWORD                AveragePPM;
-        result_printer->Set(V8_STRING_NEW_UTF8("averagePPM"), V8_VALUE_NEW(Number, printer->AveragePPM));
+        Nan::Set(result_printer, V8_STRING_NEW_UTF8("averagePPM"), V8_VALUE_NEW(Number, printer->AveragePPM));
 
         //DWORD                StartTime;
         if(printer->StartTime > 0)
         {
-            result_printer->Set(V8_STRING_NEW_UTF8("startTime"), V8_VALUE_NEW(Number, printer->StartTime));
+            Nan::Set(result_printer, V8_STRING_NEW_UTF8("startTime"), V8_VALUE_NEW(Number, printer->StartTime));
         }
         //DWORD                UntilTime;
         if(printer->UntilTime > 0)
         {
-            result_printer->Set(V8_STRING_NEW_UTF8("untilTime"), V8_VALUE_NEW(Number, printer->UntilTime));
+            Nan::Set(result_printer, V8_STRING_NEW_UTF8("untilTime"), V8_VALUE_NEW(Number, printer->UntilTime));
         }
 
         //TODO: to finish to extract all data
@@ -416,14 +426,14 @@ namespace{
 
         if(printer->cJobs > 0)
         {
-            v8::Local<v8::Array> result_printer_jobs = V8_VALUE_NEW_V_0_11_10(Array, printer->cJobs);
+            v8::Local<v8::Array> result_printer_jobs = V8_VALUE_NEW(Array, printer->cJobs);
             // get jobs
             std::string error_str = retrieveAndParseJobs(printer->pPrinterName, printer->cJobs, result_printer_jobs, iPrinterHandle);
             if(!error_str.empty())
             {
                 return error_str;
             }
-            result_printer->Set(V8_STRING_NEW_UTF8("jobs"), result_printer_jobs);
+            Nan::Set(result_printer, V8_STRING_NEW_UTF8("jobs"), result_printer_jobs);
         }
         return "";
     }
@@ -452,20 +462,20 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
 	error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
-    v8::Local<v8::Array> result = V8_VALUE_NEW_V_0_11_10(Array, printers_size);
+    v8::Local<v8::Array> result = V8_VALUE_NEW(Array, printers_size);
     // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
 	PRINTER_INFO_2W *printer = printers.get();
 	DWORD i = 0;
     for(; i < printers_size; ++i, ++printer)
     {
-        v8::Local<v8::Object> result_printer = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+        v8::Local<v8::Object> result_printer = V8_VALUE_NEW_DEFAULT(Object);
         PrinterHandle printerHandle((LPWSTR)(printer->pPrinterName));
         std::string error_str = parsePrinterInfo(printer, result_printer, printerHandle);
         if(!error_str.empty())
         {
             RETURN_EXCEPTION_STR(error_str.c_str());
         }
-        result->Set(i, result_printer);
+        Nan::Set(result, i, result_printer);
     }
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
@@ -519,7 +529,7 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
 	error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
-    v8::Local<v8::Object> result_printer = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+    v8::Local<v8::Object> result_printer = V8_VALUE_NEW_DEFAULT(Object);
     std::string error_str = parsePrinterInfo(printer.get(), result_printer, printerHandle);
     if(!error_str.empty())
     {
@@ -567,7 +577,7 @@ MY_NODE_MODULE_CALLBACK(getJob)
 	error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
-    v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+    v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT(Object);
     parseJobObject(job.get(), result_printer_job);
     MY_NODE_MODULE_RETURN_VALUE(result_printer_job);
 }
@@ -601,17 +611,17 @@ MY_NODE_MODULE_CALLBACK(setJob)
     // TODO: add the possibility to set job properties
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
     BOOL ok = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
-    MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW_V_0_11_10(Boolean, ok == TRUE));
+    MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Boolean, ok == TRUE));
 }
 
 MY_NODE_MODULE_CALLBACK(getSupportedJobCommands)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
+    v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT(Array);
     int i = 0;
     for(StatusMapType::const_iterator itJob = getJobCommandMap().begin(); itJob != getJobCommandMap().end(); ++itJob)
     {
-        result->Set(i++, V8_STRING_NEW_UTF8(itJob->first.c_str()));
+        Nan::Set(result, i++, V8_STRING_NEW_UTF8(itJob->first.c_str()));
     }
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
@@ -619,7 +629,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedJobCommands)
 MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
+    v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT(Array);
     int format_i = 0;
 
     LPTSTR name = NULL;
@@ -655,7 +665,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
 
         _DATATYPES_INFO_1W *pDataType = dataTypes.get();
         for(DWORD j = 0; j < dataTypesNum; ++j, ++pDataType) {
-            result->Set(format_i++, V8_STRING_NEW_2BYTES((uint16_t*)(pDataType->pName)));
+            Nan::Set(result, format_i++, V8_STRING_NEW_2BYTES((uint16_t*)(pDataType->pName)));
         }
     }
 
@@ -675,7 +685,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
