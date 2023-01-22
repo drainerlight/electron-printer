@@ -1,7 +1,7 @@
 {
   "name": "electron-printer",
   "description": "Node.js printer bindings - electron builds",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "homepage": "https://github.com/drainerlight/electron-printer",
   "author": {
     "name": "Drainerlight"
@@ -13,13 +13,10 @@
     "type": "git",
     "url": "https://github.com/drainerlight/electron-printer.git"
   },
-  "engines": {
-    "electron": ">=15.0.0"
-  },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --target=15.0.0 && node-pre-gyp package --target_platform=linux --runtime=electron --target=15.0.0 && node-pre-gyp-github publish --release",
-    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --target=15.0.0 && node-pre-gyp package --target_platform=win32 --runtime=electron --target=15.0.0 && node-pre-gyp-github publish --release"
+    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=15.0.0 && node-pre-gyp package --target_platform=linux --runtime=electron --target=15.0.0 ",
+    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=15.0.0 && node-pre-gyp package --target_platform=win32 --runtime=electron --target=15.0.0"
   },
   "binary": {
     "module_name": "node_printer",
@@ -32,9 +29,6 @@
     "node-pre-gyp": "^0.17.0",
     "node-pre-gyp-github": "^1.1.2"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
   "devDependencies": {
     "nodeunit": "*"
   },
