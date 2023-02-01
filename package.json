@@ -1,7 +1,7 @@
 {
   "name": "electron-printer",
   "description": "Node.js printer bindings - electron builds",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/drainerlight/electron-printer",
   "author": {
     "name": "Drainerlight"
@@ -15,19 +15,18 @@
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=15.0.0 && node-pre-gyp package --target_platform=linux --runtime=electron --target=15.0.0 ",
-    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=15.0.0 && node-pre-gyp package --target_platform=win32 --runtime=electron --target=15.0.0"
+    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=19.1.9 && node-pre-gyp package",
+    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=19.1.9 && node-pre-gyp package"
   },
   "binary": {
     "module_name": "node_printer",
-    "module_path": "./build/{configuration}/electron-v15.0.0-{platform}-{arch}/",
-    "package_name": "electron-v15.0.0-{platform}-{arch}.tar.gz",
-    "host": "https://github.com/drainerlight/electron-printer/releases/download/0.0.7"
+    "module_path": "./build/{configuration}/electron-v19.1.9-{platform}-{arch}/",
+    "package_name": "electron-v19.1.9-{platform}-{arch}.tar.gz",
+    "host": "https://github.com/drainerlight/electron-printer/releases/download/0.1.1"
   },
   "dependencies": {
     "nan": "^2.1.0",
-    "node-pre-gyp": "^0.17.0",
-    "node-pre-gyp-github": "^1.1.2"
+    "@mapbox/node-pre-gyp": "^1.0.10"
   },
   "devDependencies": {
     "nodeunit": "*"
