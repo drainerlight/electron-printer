@@ -15,18 +15,19 @@
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=19.1.9 && node-pre-gyp package",
-    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=19.1.9 && node-pre-gyp package"
+    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=22.1.0 && node-pre-gyp package",
+    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=22.1.0 && node-pre-gyp package"
   },
   "binary": {
     "module_name": "node_printer",
-    "module_path": "./build/{configuration}/electron-v19.1.9-{platform}-{arch}/",
-    "package_name": "electron-v19.1.9-{platform}-{arch}.tar.gz",
+    "module_path": "./build/{configuration}/electron-v22.1.0-{platform}-{arch}/",
+    "package_name": "electron-v22.1.0-{platform}-{arch}.tar.gz",
     "host": "https://github.com/drainerlight/electron-printer/releases/download/0.1.1"
   },
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.10",
     "nan": "^2.1.0",
-    "@mapbox/node-pre-gyp": "^1.0.10"
+    "node-gyp": "^9.3.1"
   },
   "devDependencies": {
     "nodeunit": "*"
