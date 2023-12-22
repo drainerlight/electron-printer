@@ -1,7 +1,7 @@
 {
   "name": "electron-printer",
   "description": "Node.js printer bindings - electron builds",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "homepage": "https://github.com/drainerlight/electron-printer",
   "author": {
     "name": "Drainerlight"
@@ -15,14 +15,14 @@
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=22.1.0 && node-pre-gyp package",
-    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=22.1.0 && node-pre-gyp package"
+    "release-linux": "node-pre-gyp rebuild --target_platform=linux --runtime=electron --dist-url=https://electronjs.org/headers --target=27.1.3 && node-pre-gyp package",
+    "release-win": "node-pre-gyp rebuild --target_platform=win32 --runtime=electron --dist-url=https://electronjs.org/headers --target=27.1.3 && node-pre-gyp package"
   },
   "binary": {
     "module_name": "node_printer",
-    "module_path": "./build/{configuration}/electron-v22.1.0-{platform}-{arch}/",
-    "package_name": "electron-v22.1.0-{platform}-{arch}.tar.gz",
-    "host": "https://github.com/drainerlight/electron-printer/releases/download/0.1.3"
+    "module_path": "./build/{configuration}/electron-v27.1.3-{platform}-{arch}/",
+    "package_name": "electron-v27.1.3-{platform}-{arch}.tar.gz",
+    "host": "https://github.com/drainerlight/electron-printer/releases/download/0.1.4"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.10",
