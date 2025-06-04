@@ -29,3 +29,15 @@ Release using  `npm run release-win --msvs_version=2013` (x64) or `npm run relea
 
 # OSx build
 After `npm i`, just use `npm run release-darwin` (`npm run release` should work)
+
+## Prebuilt Binaries
+
+This package uses `node-pre-gyp` to attempt to download prebuilt binaries from GitHub Releases.
+Prebuilds are matched based on the package version. For example, if you install version `X.Y.Z`, `node-pre-gyp` will look for binaries under the `X.Y.Z` release/tag on GitHub.
+
+The expected path for these binaries is `https://github.com/drainerlight/electron-printer/releases/download/{version}/electron-v36.4.0-{platform}-{arch}.tar.gz`, where:
+- `{version}` is the package version (e.g., `0.2.0`).
+- `{platform}` is your operating system (e.g., `linux`, `win32`, `darwin`).
+- `{arch}` is your system architecture (e.g., `x64`, `ia32`).
+
+If a prebuilt binary is not found for your specific platform, architecture, or the Electron version targeted by the prebuilds (currently electron v36.4.0), the installation will automatically fall back to building from source using `node-gyp`. This ensures that the package can still be installed even if a suitable prebuilt binary is not available.

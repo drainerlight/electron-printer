@@ -22,7 +22,8 @@
     "module_name": "node_printer",
     "module_path": "./build/{configuration}/electron-v36.4.0-{platform}-{arch}/",
     "package_name": "electron-v36.4.0-{platform}-{arch}.tar.gz",
-    "host": "https://github.com/drainerlight/electron-printer/releases/download/0.1.4"
+    "host": "https://github.com/drainerlight/electron-printer/releases/download",
+    "remote_path": "{version}"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.10",
