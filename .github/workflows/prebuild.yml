@@ -67,7 +67,11 @@ jobs:
 
       - name: Locate packaged archive
         run: |
-          tarball=$(ls build/stage/electron-v${{ matrix.electron }}-${TARGET_PLATFORM}-${TARGET_ARCH}.tar.gz)
+          PLATFORM=${TARGET_PLATFORM}
+          ARCH=${TARGET_ARCH}
+          if [ "$PLATFORM" = "process.platform" ] || [ -z "$PLATFORM" ]; then PLATFORM=$(node -p "process.platform"); fi
+          if [ "$ARCH" = "process.arch" ] || [ -z "$ARCH" ]; then ARCH=$(node -p "process.arch"); fi
+          tarball=$(ls build/stage/electron-v${{ matrix.electron }}-${PLATFORM}-${ARCH}.tar.gz)
           echo "TARBALL=$tarball" >> "$GITHUB_ENV"
 
       - name: Upload build artifact
