@@ -1,0 +1,78 @@
+name: Build prebuilds
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prebuild:
+    name: ${{ matrix.os }} / Electron ${{ matrix.electron }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        electron: ["29.0.0", "30.0.0", "31.0.0", "32.0.0", "33.0.0", "34.0.0", "35.0.0", "36.4.0", "37.0.0", "38.0.0", "39.0.0"]
+        include:
+          - electron: "35.0.0"
+            node_version: 22
+          - electron: "36.4.0"
+            node_version: 22
+          - electron: "37.0.0"
+            node_version: 22
+          - electron: "38.0.0"
+            node_version: 22
+          - electron: "39.0.0"
+            node_version: 22
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node_version || '20' }}
+          cache: yarn
+
+      - name: Enable corepack (Yarn)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Determine build platform data
+        run: |
+          echo "TARGET_PLATFORM=$(node -p \"process.platform\")" >> "$GITHUB_ENV"
+          echo "TARGET_ARCH=$(node -p \"process.arch\")" >> "$GITHUB_ENV"
+
+      - name: Build and package prebuild
+        run: |
+          ELECTRON_TARGET=${{ matrix.electron }} TARGET_PLATFORM="$TARGET_PLATFORM" TARGET_ARCH="$TARGET_ARCH" yarn node scripts/release.js
+
+      - name: Locate packaged archive
+        run: |
+          tarball=$(ls build/stage/electron-v${{ matrix.electron }}-${TARGET_PLATFORM}-${TARGET_ARCH}.tar.gz)
+          echo "TARBALL=$tarball" >> "$GITHUB_ENV"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-v${{ matrix.electron }}-${{ matrix.os }}-${{ env.TARGET_ARCH }}
+          path: ${{ env.TARBALL }}
+
+      - name: Upload release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.TARBALL }}
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
