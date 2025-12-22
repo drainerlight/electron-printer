@@ -51,6 +51,12 @@
                   '<!(cups-config --libs)'
               ]
            }
+        }, {
+          # Windows-specific definitions to avoid macro clashes in V8/NAN
+          'defines': [
+            'NOMINMAX',
+            'WIN32_LEAN_AND_MEAN'
+          ]
         }]
       ]
     }
