@@ -1,6 +1,10 @@
 #include "node_printer.hpp"
 
 #if _MSC_VER
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <Winspool.h>
 #include <Wingdi.h>
