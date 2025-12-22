@@ -4,8 +4,19 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const preGypBin = require.resolve('@mapbox/node-pre-gyp/bin/node-pre-gyp');
-const targetPlatform = process.argv[2] || process.env.TARGET_PLATFORM || process.env.npm_config_platform || process.platform;
-const targetArch = process.env.TARGET_ARCH || process.env.npm_config_arch || process.arch;
+const resolvePlatform = () => {
+  const val = process.argv[2] || process.env.TARGET_PLATFORM || process.env.npm_config_platform || process.platform;
+  // Guard against literals like "process.platform" that can leak from env on Windows CI
+  return val === 'process.platform' ? process.platform : val;
+};
+
+const resolveArch = () => {
+  const val = process.env.TARGET_ARCH || process.env.npm_config_arch || process.arch;
+  return val === 'process.arch' ? process.arch : val;
+};
+
+const targetPlatform = resolvePlatform();
+const targetArch = resolveArch();
 const electronTarget = process.env.ELECTRON_TARGET || process.env.npm_config_target || '36.4.0';
 const distUrl = 'https://electronjs.org/headers';
 

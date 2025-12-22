@@ -36,6 +36,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install CUPS build deps (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcups2-dev
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
