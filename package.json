@@ -1,7 +1,7 @@
 {
   "name": "electron-printer",
   "description": "Node.js printer bindings - electron builds",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "homepage": "https://github.com/drainerlight/electron-printer",
   "author": {
     "name": "Drainerlight"
