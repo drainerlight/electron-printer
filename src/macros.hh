@@ -1,7 +1,26 @@
 #ifndef NODE_PRINTER_SRC_MACROS_H
 #define NODE_PRINTER_SRC_MACROS_H
 
+#include <v8.h>
+#if defined(__has_include)
+#  if __has_include(<v8-version.h>)
+#    include <v8-version.h>
+#  endif
+#endif
+
+// V8 14 removed Object::SetPrototype; map NAN's usage to the new SetPrototypeV2
+// so the NAN headers still compile with modern Electron/Node.
+#if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 14
+#  define NODE_PRINTER_NEEDS_SET_PROTOTYPE_V2
+#  define SetPrototype SetPrototypeV2
+#endif
+
 #include <nan.h>
+
+#if defined(NODE_PRINTER_NEEDS_SET_PROTOTYPE_V2)
+#  undef SetPrototype
+#  undef NODE_PRINTER_NEEDS_SET_PROTOTYPE_V2
+#endif
 #include <node_version.h>
 
 // NODE_MODULE_VERSION was incremented for v0.11
